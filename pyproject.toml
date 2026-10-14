@@ -1,0 +1,29 @@
+[project]
+name = "eventhub"
+version = "0.1.0"
+description = "EventHub - Event management API built with Django 6.1.2 and DRF"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    # Core framework
+    "Django==6.1.2",
+    "djangorestframework>=3.16",
+
+    # Auth - JWT tokens + blacklist
+    "djangorestframework-simplejwt>=5.4",
+
+    # Filtering
+    "django-filter>=25.1",
+
+    # Database driver (psycopg 3 as specified in TRD)
+    "psycopg[binary]>=3.2",
+
+    # Config / env loading
+    "python-decouple>=3.8",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.10",
+]

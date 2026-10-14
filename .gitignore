@@ -1,0 +1,33 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.agents/
+
+# Virtual environments
+.venv
+
+# Django
+*.log
+db.sqlite3
+/staticfiles/
+/media/
+
+# Environment secrets — .env.example IS committed, .env is NOT
+.env
+
+# PostgreSQL bind mount (docker compose)
+data/
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# uv.lock is committed (pins exact versions); do NOT ignore it
+
+skills-lock.json
