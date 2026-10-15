@@ -1,48 +1,91 @@
 {
   "info": {
-    "name": "EventHub API",
-    "description": "Postman Collection for EventHub API testing and verification.",
+    "name": "EventHub Complete API Collection",
+    "description": "Comprehensive Postman Collection covering all 31 endpoints of EventHub API with environment variables, auth scripts, and test cases.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "event_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "reservation_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "category_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "booking_code",
+      "value": "EH-3F9A1C07B2",
+      "type": "string"
+    },
+    {
+      "key": "waitlist_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "Auth",
+      "name": "1. Authentication (/api/auth/)",
       "item": [
         {
-          "name": "1. Register Organizer",
+          "name": "Register Attendee",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"organizer1\",\n  \"email\": \"organizer1@example.com\",\n  \"password\": \"OrganizerPass123!\",\n  \"role\": \"organizer\"\n}"
+              "raw": "{\n  \"username\": \"alice_attendee\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"role\": \"attendee\",\n  \"first_name\": \"Alice\",\n  \"last_name\": \"Smith\",\n  \"phone_number\": \"+919876543210\",\n  \"date_of_birth\": \"1995-05-15\",\n  \"street\": \"123 Tech Park Road\",\n  \"city\": \"Bengaluru\",\n  \"state\": \"Karnataka\",\n  \"country\": \"India\",\n  \"pincode\": \"560001\"\n}"
             },
             "url": { "raw": "{{base_url}}/api/auth/register/", "host": ["{{base_url}}"], "path": ["api", "auth", "register", ""] }
           }
         },
         {
-          "name": "2. Register Attendee",
+          "name": "Register Organizer",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"attendee1\",\n  \"email\": \"attendee1@example.com\",\n  \"password\": \"AttendeePass123!\",\n  \"role\": \"attendee\",\n  \"phone_number\": \"+919876543210\",\n  \"city\": \"Bengaluru\"\n}"
+              "raw": "{\n  \"username\": \"bob_organizer\",\n  \"email\": \"bob@example.com\",\n  \"password\": \"OrganizerPass123!\",\n  \"role\": \"organizer\",\n  \"first_name\": \"Bob\",\n  \"last_name\": \"Organizer\",\n  \"phone_number\": \"+919876543211\",\n  \"city\": \"Bengaluru\"\n}"
             },
             "url": { "raw": "{{base_url}}/api/auth/register/", "host": ["{{base_url}}"], "path": ["api", "auth", "register", ""] }
           }
         },
         {
-          "name": "3. Login",
+          "name": "Login (Auto-sets Token)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.access) {",
-                  "    pm.environment.set(\"access_token\", jsonData.access);",
-                  "    pm.environment.set(\"refresh_token\", jsonData.refresh);",
+                  "var data = pm.response.json();",
+                  "if (data.access) {",
+                  "    pm.collectionVariables.set(\"access_token\", data.access);",
+                  "    pm.collectionVariables.set(\"refresh_token\", data.refresh);",
+                  "    console.log(\"Access Token successfully stored.\");",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -54,26 +97,63 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"attendee1\",\n  \"password\": \"AttendeePass123!\"\n}"
+              "raw": "{\n  \"username\": \"alice_attendee\",\n  \"password\": \"SecurePass123!\"\n}"
             },
             "url": { "raw": "{{base_url}}/api/auth/login/", "host": ["{{base_url}}"], "path": ["api", "auth", "login", ""] }
           }
         },
         {
-          "name": "4. Get Current User (/me/)",
+          "name": "Token Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.access) {",
+                  "    pm.collectionVariables.set(\"access_token\", data.access);",
+                  "    if (data.refresh) pm.collectionVariables.set(\"refresh_token\", data.refresh);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/token/refresh/", "host": ["{{base_url}}"], "path": ["api", "auth", "token", "refresh", ""] }
+          }
+        },
+        {
+          "name": "Get Current Profile (/api/auth/me/)",
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
             "url": { "raw": "{{base_url}}/api/auth/me/", "host": ["{{base_url}}"], "path": ["api", "auth", "me", ""] }
           }
-        }
-      ]
-    },
-    {
-      "name": "Events",
-      "item": [
+        },
         {
-          "name": "1. Create Event (Organizer)",
+          "name": "Update Profile (/api/auth/me/)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone_number\": \"+919876549999\",\n  \"city\": \"Mysuru\",\n  \"state\": \"Karnataka\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/me/", "host": ["{{base_url}}"], "path": ["api", "auth", "me", ""] }
+          }
+        },
+        {
+          "name": "Logout / Blacklist Token",
           "request": {
             "method": "POST",
             "header": [
@@ -82,47 +162,259 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Cloud & AI Summit 2026\",\n  \"venue\": \"Bengaluru Palace Hall\",\n  \"date\": \"2026-12-15\",\n  \"total_seats\": 100,\n  \"price\": \"250.00\",\n  \"description\": \"Annual technology conference focusing on distributed cloud systems and AI.\"\n}"
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/logout/", "host": ["{{base_url}}"], "path": ["api", "auth", "logout", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Categories (/api/categories/)",
+      "item": [
+        {
+          "name": "List Categories (Public)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/categories/", "host": ["{{base_url}}"], "path": ["api", "categories", ""] }
+          }
+        },
+        {
+          "name": "Retrieve Category (Public)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/categories/{{category_id}}/", "host": ["{{base_url}}"], "path": ["api", "categories", "{{category_id}}", ""] }
+          }
+        },
+        {
+          "name": "Create Category (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Technology & AI\",\n  \"slug\": \"tech-ai\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/categories/", "host": ["{{base_url}}"], "path": ["api", "categories", ""] }
+          }
+        },
+        {
+          "name": "Update Category (Admin Only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Technology, Cloud & AI\",\n  \"slug\": \"tech-cloud-ai\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/categories/{{category_id}}/", "host": ["{{base_url}}"], "path": ["api", "categories", "{{category_id}}", ""] }
+          }
+        },
+        {
+          "name": "Delete Category (Admin Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/categories/{{category_id}}/", "host": ["{{base_url}}"], "path": ["api", "categories", "{{category_id}}", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Events (/api/events/)",
+      "item": [
+        {
+          "name": "List All Events (Public)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/events/", "host": ["{{base_url}}"], "path": ["api", "events", ""] }
+          }
+        },
+        {
+          "name": "Create Event (Organizer / Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.id) {",
+                  "    pm.collectionVariables.set(\"event_id\", data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Global Tech Summit 2026\",\n  \"venue\": \"Bangalore International Exhibition Centre\",\n  \"date\": \"2026-11-20\",\n  \"total_seats\": 100,\n  \"price\": \"299.00\",\n  \"description\": \"Premier technology symposium featuring keynote sessions and interactive workshops.\"\n}"
             },
             "url": { "raw": "{{base_url}}/api/events/", "host": ["{{base_url}}"], "path": ["api", "events", ""] }
           }
         },
         {
-          "name": "2. List Events (Public)",
+          "name": "Retrieve Event (Public)",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/api/events/", "host": ["{{base_url}}"], "path": ["api", "events", ""] }
+            "url": { "raw": "{{base_url}}/api/events/{{event_id}}/", "host": ["{{base_url}}"], "path": ["api", "events", "{{event_id}}", ""] }
           }
         },
         {
-          "name": "3. Filter Events by Status",
+          "name": "Filter Events by Status (?status=upcoming)",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/api/events/?status=upcoming", "host": ["{{base_url}}"], "path": ["api", "events", ""], "query": [{ "key": "status", "value": "upcoming" }] }
+            "url": {
+              "raw": "{{base_url}}/api/events/?status=upcoming",
+              "host": ["{{base_url}}"],
+              "path": ["api", "events", ""],
+              "query": [{ "key": "status", "value": "upcoming" }]
+            }
           }
         },
         {
-          "name": "4. Filter Events by Venue",
+          "name": "Filter Events by Venue (?venue=bangalore)",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/api/events/?venue=bengaluru", "host": ["{{base_url}}"], "path": ["api", "events", ""], "query": [{ "key": "venue", "value": "bengaluru" }] }
+            "url": {
+              "raw": "{{base_url}}/api/events/?venue=bangalore",
+              "host": ["{{base_url}}"],
+              "path": ["api", "events", ""],
+              "query": [{ "key": "venue", "value": "bangalore" }]
+            }
           }
         },
         {
-          "name": "5. Event Stats (Owner)",
+          "name": "Search & Pagination (?search=tech&page=1&page_size=10)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/events/?search=tech&page=1&page_size=10&ordering=-date",
+              "host": ["{{base_url}}"],
+              "path": ["api", "events", ""],
+              "query": [
+                { "key": "search", "value": "tech" },
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" },
+                { "key": "ordering", "value": "-date" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Organizer's Own Events (/api/events/mine/)",
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
-            "url": { "raw": "{{base_url}}/api/events/1/stats/", "host": ["{{base_url}}"], "path": ["api", "events", "1", "stats", ""] }
+            "url": { "raw": "{{base_url}}/api/events/mine/", "host": ["{{base_url}}"], "path": ["api", "events", "mine", ""] }
+          }
+        },
+        {
+          "name": "Update Event (Owner / Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated event description with revised speaker schedule.\",\n  \"total_seats\": 150\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/events/{{event_id}}/", "host": ["{{base_url}}"], "path": ["api", "events", "{{event_id}}", ""] }
+          }
+        },
+        {
+          "name": "Event Stats (Owner / Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/events/{{event_id}}/stats/", "host": ["{{base_url}}"], "path": ["api", "events", "{{event_id}}", "stats", ""] }
+          }
+        },
+        {
+          "name": "Event Attendees (Owner / Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/events/{{event_id}}/attendees/", "host": ["{{base_url}}"], "path": ["api", "events", "{{event_id}}", "attendees", ""] }
+          }
+        },
+        {
+          "name": "View Event Waitlist Queue (Owner / Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/events/{{event_id}}/waitlist/", "host": ["{{base_url}}"], "path": ["api", "events", "{{event_id}}", "waitlist", ""] }
+          }
+        },
+        {
+          "name": "Join Event Waitlist (Attendee / Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"attendee_name\": \"Waiting Attendee\",\n  \"attendee_email\": \"waiting@example.com\",\n  \"seats_requested\": 2\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/events/{{event_id}}/waitlist/", "host": ["{{base_url}}"], "path": ["api", "events", "{{event_id}}", "waitlist", ""] }
+          }
+        },
+        {
+          "name": "Cancel Event (Owner / Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/events/{{event_id}}/cancel/", "host": ["{{base_url}}"], "path": ["api", "events", "{{event_id}}", "cancel", ""] }
+          }
+        },
+        {
+          "name": "Delete Event (Owner / Admin - Only if 0 bookings)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/events/{{event_id}}/", "host": ["{{base_url}}"], "path": ["api", "events", "{{event_id}}", ""] }
           }
         }
       ]
     },
     {
-      "name": "Reservations",
+      "name": "4. Reservations (/api/reservations/)",
       "item": [
         {
-          "name": "1. Successful Reservation (Item 5 Screenshot)",
+          "name": "Checklist Item 5: Successful Reservation (201 Created)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.id) {",
+                  "    pm.collectionVariables.set(\"reservation_id\", data.id);",
+                  "}",
+                  "if (data.booking_code) {",
+                  "    pm.collectionVariables.set(\"booking_code\", data.booking_code);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -131,13 +423,13 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event\": 1,\n  \"attendee_name\": \"John Doe\",\n  \"attendee_email\": \"john.doe@example.com\",\n  \"seats_reserved\": 2\n}"
+              "raw": "{\n  \"event\": {{event_id}},\n  \"attendee_name\": \"Alice Smith\",\n  \"attendee_email\": \"alice@example.com\",\n  \"seats_reserved\": 2\n}"
             },
             "url": { "raw": "{{base_url}}/api/reservations/", "host": ["{{base_url}}"], "path": ["api", "reservations", ""] }
           }
         },
         {
-          "name": "2. Overbooking Failure (Item 6 Screenshot)",
+          "name": "Checklist Item 6: Overbooking Failure (400 Bad Request)",
           "request": {
             "method": "POST",
             "header": [
@@ -146,54 +438,138 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event\": 1,\n  \"attendee_name\": \"Overbooking User\",\n  \"attendee_email\": \"overbook@example.com\",\n  \"seats_reserved\": 5\n}"
+              "raw": "{\n  \"event\": {{event_id}},\n  \"attendee_name\": \"Excess Booking\",\n  \"attendee_email\": \"excess@example.com\",\n  \"seats_reserved\": 5\n}"
             },
             "url": { "raw": "{{base_url}}/api/reservations/", "host": ["{{base_url}}"], "path": ["api", "reservations", ""] }
           }
         },
         {
-          "name": "3. Successful Cancellation (Item 7 Screenshot)",
+          "name": "Checklist Item 7: Successful Cancellation (200 OK)",
           "request": {
             "method": "POST",
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
-            "url": { "raw": "{{base_url}}/api/reservations/1/cancel/", "host": ["{{base_url}}"], "path": ["api", "reservations", "1", "cancel", ""] }
+            "url": { "raw": "{{base_url}}/api/reservations/{{reservation_id}}/cancel/", "host": ["{{base_url}}"], "path": ["api", "reservations", "{{reservation_id}}", "cancel", ""] }
           }
         },
         {
-          "name": "4. Filter Reservations by Event ID",
+          "name": "List Reservations (Scoped by Role)",
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
-            "url": { "raw": "{{base_url}}/api/reservations/?event_id=1", "host": ["{{base_url}}"], "path": ["api", "reservations", ""], "query": [{ "key": "event_id", "value": "1" }] }
+            "url": { "raw": "{{base_url}}/api/reservations/", "host": ["{{base_url}}"], "path": ["api", "reservations", ""] }
           }
         },
         {
-          "name": "5. Lookup Reservation by Code",
+          "name": "Filter Reservations by Event ID (?event_id=1)",
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
-            "url": { "raw": "{{base_url}}/api/reservations/lookup/?code=EH-3F9A1C07B2", "host": ["{{base_url}}"], "path": ["api", "reservations", "lookup", ""], "query": [{ "key": "code", "value": "EH-3F9A1C07B2" }] }
+            "url": {
+              "raw": "{{base_url}}/api/reservations/?event_id={{event_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reservations", ""],
+              "query": [{ "key": "event_id", "value": "{{event_id}}" }]
+            }
           }
         },
         {
-          "name": "6. Mock Payment (Pay Reservation)",
+          "name": "Filter Reservations by Status (?status=confirmed)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/reservations/?status=confirmed",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reservations", ""],
+              "query": [{ "key": "status", "value": "confirmed" }]
+            }
+          }
+        },
+        {
+          "name": "Retrieve Reservation Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/reservations/{{reservation_id}}/", "host": ["{{base_url}}"], "path": ["api", "reservations", "{{reservation_id}}", ""] }
+          }
+        },
+        {
+          "name": "List User's Own Bookings (/api/reservations/mine/)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/reservations/mine/", "host": ["{{base_url}}"], "path": ["api", "reservations", "mine", ""] }
+          }
+        },
+        {
+          "name": "Lookup Reservation by Code (?code=EH-...)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/reservations/lookup/?code={{booking_code}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reservations", "lookup", ""],
+              "query": [{ "key": "code", "value": "{{booking_code}}" }]
+            }
+          }
+        },
+        {
+          "name": "Mock Payment (/pay/)",
           "request": {
             "method": "POST",
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
-            "url": { "raw": "{{base_url}}/api/reservations/1/pay/", "host": ["{{base_url}}"], "path": ["api", "reservations", "1", "pay", ""] }
+            "url": { "raw": "{{base_url}}/api/reservations/{{reservation_id}}/pay/", "host": ["{{base_url}}"], "path": ["api", "reservations", "{{reservation_id}}", "pay", ""] }
           }
         }
       ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://127.0.0.1:8000"
     },
     {
-      "key": "access_token",
-      "value": ""
+      "name": "5. Waitlist (/api/waitlist/)",
+      "item": [
+        {
+          "name": "List User's Waitlist Entries",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/waitlist/", "host": ["{{base_url}}"], "path": ["api", "waitlist", ""] }
+          }
+        },
+        {
+          "name": "Leave Waitlist (Cancel Entry)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/waitlist/{{waitlist_id}}/", "host": ["{{base_url}}"], "path": ["api", "waitlist", "{{waitlist_id}}", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. API Documentation & Schema",
+      "item": [
+        {
+          "name": "OpenAPI 3 Schema JSON",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/schema/", "host": ["{{base_url}}"], "path": ["api", "schema", ""] }
+          }
+        },
+        {
+          "name": "Swagger UI Documentation HTML",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/docs/", "host": ["{{base_url}}"], "path": ["api", "docs", ""] }
+          }
+        },
+        {
+          "name": "Redoc Documentation HTML",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/redoc/", "host": ["{{base_url}}"], "path": ["api", "redoc", ""] }
+          }
+        }
+      ]
     }
   ]
 }
