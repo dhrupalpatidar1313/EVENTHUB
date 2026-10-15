@@ -1,8 +1,7 @@
 """
-accounts/serializers.py  (stub — filled out fully in M4)
+accounts/serializers.py
 
-Only the registration serializer is here so M1 can wire a minimal
-/api/auth/register/ endpoint and prove the custom User model works.
+Serializers for custom User model with profile fields.
 """
 
 from django.contrib.auth.password_validation import validate_password
@@ -15,7 +14,22 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "password", "role"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "password",
+            "role",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "date_of_birth",
+            "street",
+            "city",
+            "state",
+            "country",
+            "pincode",
+        ]
         read_only_fields = ["id"]
 
     def validate_role(self, value):
@@ -31,9 +45,25 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Read-only representation of the current user (GET /api/auth/me/)."""
+    """User representation for profile viewing and updating (GET/PATCH /api/auth/me/)."""
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "role", "first_name", "last_name"]
-        read_only_fields = ["id", "role"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "role",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "date_of_birth",
+            "profile_picture",
+            "street",
+            "city",
+            "state",
+            "country",
+            "pincode",
+            "full_address",
+        ]
+        read_only_fields = ["id", "role", "full_address"]

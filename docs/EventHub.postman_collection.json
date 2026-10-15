@@ -1,0 +1,199 @@
+{
+  "info": {
+    "name": "EventHub API",
+    "description": "Postman Collection for EventHub API testing and verification.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "1. Register Organizer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"organizer1\",\n  \"email\": \"organizer1@example.com\",\n  \"password\": \"OrganizerPass123!\",\n  \"role\": \"organizer\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register/", "host": ["{{base_url}}"], "path": ["api", "auth", "register", ""] }
+          }
+        },
+        {
+          "name": "2. Register Attendee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"attendee1\",\n  \"email\": \"attendee1@example.com\",\n  \"password\": \"AttendeePass123!\",\n  \"role\": \"attendee\",\n  \"phone_number\": \"+919876543210\",\n  \"city\": \"Bengaluru\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register/", "host": ["{{base_url}}"], "path": ["api", "auth", "register", ""] }
+          }
+        },
+        {
+          "name": "3. Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access) {",
+                  "    pm.environment.set(\"access_token\", jsonData.access);",
+                  "    pm.environment.set(\"refresh_token\", jsonData.refresh);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"attendee1\",\n  \"password\": \"AttendeePass123!\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login/", "host": ["{{base_url}}"], "path": ["api", "auth", "login", ""] }
+          }
+        },
+        {
+          "name": "4. Get Current User (/me/)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/auth/me/", "host": ["{{base_url}}"], "path": ["api", "auth", "me", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "1. Create Event (Organizer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Cloud & AI Summit 2026\",\n  \"venue\": \"Bengaluru Palace Hall\",\n  \"date\": \"2026-12-15\",\n  \"total_seats\": 100,\n  \"price\": \"250.00\",\n  \"description\": \"Annual technology conference focusing on distributed cloud systems and AI.\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/events/", "host": ["{{base_url}}"], "path": ["api", "events", ""] }
+          }
+        },
+        {
+          "name": "2. List Events (Public)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/events/", "host": ["{{base_url}}"], "path": ["api", "events", ""] }
+          }
+        },
+        {
+          "name": "3. Filter Events by Status",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/events/?status=upcoming", "host": ["{{base_url}}"], "path": ["api", "events", ""], "query": [{ "key": "status", "value": "upcoming" }] }
+          }
+        },
+        {
+          "name": "4. Filter Events by Venue",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/events/?venue=bengaluru", "host": ["{{base_url}}"], "path": ["api", "events", ""], "query": [{ "key": "venue", "value": "bengaluru" }] }
+          }
+        },
+        {
+          "name": "5. Event Stats (Owner)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/events/1/stats/", "host": ["{{base_url}}"], "path": ["api", "events", "1", "stats", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reservations",
+      "item": [
+        {
+          "name": "1. Successful Reservation (Item 5 Screenshot)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": 1,\n  \"attendee_name\": \"John Doe\",\n  \"attendee_email\": \"john.doe@example.com\",\n  \"seats_reserved\": 2\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/reservations/", "host": ["{{base_url}}"], "path": ["api", "reservations", ""] }
+          }
+        },
+        {
+          "name": "2. Overbooking Failure (Item 6 Screenshot)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": 1,\n  \"attendee_name\": \"Overbooking User\",\n  \"attendee_email\": \"overbook@example.com\",\n  \"seats_reserved\": 5\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/reservations/", "host": ["{{base_url}}"], "path": ["api", "reservations", ""] }
+          }
+        },
+        {
+          "name": "3. Successful Cancellation (Item 7 Screenshot)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/reservations/1/cancel/", "host": ["{{base_url}}"], "path": ["api", "reservations", "1", "cancel", ""] }
+          }
+        },
+        {
+          "name": "4. Filter Reservations by Event ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/reservations/?event_id=1", "host": ["{{base_url}}"], "path": ["api", "reservations", ""], "query": [{ "key": "event_id", "value": "1" }] }
+          }
+        },
+        {
+          "name": "5. Lookup Reservation by Code",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/reservations/lookup/?code=EH-3F9A1C07B2", "host": ["{{base_url}}"], "path": ["api", "reservations", "lookup", ""], "query": [{ "key": "code", "value": "EH-3F9A1C07B2" }] }
+          }
+        },
+        {
+          "name": "6. Mock Payment (Pay Reservation)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/reservations/1/pay/", "host": ["{{base_url}}"], "path": ["api", "reservations", "1", "pay", ""] }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    }
+  ]
+}

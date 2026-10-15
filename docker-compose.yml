@@ -1,8 +1,6 @@
-version: "3.9"
-
 services:
   db:
-    image: postgres:18
+    image: postgres:17
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -10,7 +8,7 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
@@ -25,8 +23,6 @@ services:
       DB_HOST: db
     ports:
       - "8000:8000"
-    volumes:
-      - .:/app
     depends_on:
       db:
         condition: service_healthy

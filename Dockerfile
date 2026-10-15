@@ -5,8 +5,9 @@ FROM python:3.14-slim
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 ENV PYTHONUNBUFFERED=1 \
-    UV_SYSTEM_PYTHON=1 \
-    UV_NO_CACHE=1
+    UV_SYSTEM_PYTHON=0 \
+    UV_NO_CACHE=1 \
+    PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
